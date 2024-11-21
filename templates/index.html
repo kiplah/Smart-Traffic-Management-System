@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Traffic Management System</h1>
+        
+        <!-- Display Traffic Data Table -->
+        <h2>Current Traffic Data</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Intersection</th>
+                    <th>Vehicle Count</th>
+                    <th>Average Speed (km/h)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in traffic_data.iterrows() %}
+                <tr>
+                    <td>{{ row['intersection'] }}</td>
+                    <td>{{ row['vehicle_count'] }}</td>
+                    <td>{{ row['avg_speed'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Adjust Signals Button -->
+        <button id="adjust-signals">Adjust Signals</button>
+
+        <!-- Display Congestion and Adjusted Signal Timings -->
+        <div id="results" style="display: none;">
+            <h2>Congestion Levels & Adjusted Signal Timings</h2>
+            <div id="congestion"></div>
+            <div id="timings"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('adjust-signals').addEventListener('click', function() {
+            fetch('/adjust_signals', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the congestion levels
+                const congestion = data.congestion_level;
+                const congestionDiv = document.getElementById('congestion');
+                congestionDiv.innerHTML = '<h3>Congestion Levels:</h3>';
+                for (let intersection in congestion) {
+                    congestionDiv.innerHTML += `<p>${intersection}: ${congestion[intersection]}</p>`;
+                }
+
+                // Display the signal timings
+                const timings = data.signal_timings;
+                const timingsDiv = document.getElementById('timings');
+                timingsDiv.innerHTML = '<h3>Adjusted Signal Timings:</h3>';
+                for (let intersection in timings) {
+                    timingsDiv.innerHTML += `<p>${intersection}: ${timings[intersection]} seconds</p>`;
+                }
+
+                // Show the results section
+                document.getElementById('results').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
